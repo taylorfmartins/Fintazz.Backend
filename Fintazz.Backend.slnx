@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="Fintazz.Api/Fintazz.Api.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Fintazz.Application/Fintazz.Application.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Fintazz.Domain/Fintazz.Domain.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Fintazz.Infrastructure/Fintazz.Infrastructure.csproj">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
