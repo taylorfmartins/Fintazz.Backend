@@ -5,7 +5,7 @@ using MongoDB.Driver;
 namespace Fintazz.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/diagnostic")]
 public class DiagnosticController : ControllerBase
 {
     private readonly MongoContext _mongoContext;

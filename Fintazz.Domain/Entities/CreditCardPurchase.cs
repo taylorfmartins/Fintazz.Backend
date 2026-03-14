@@ -9,8 +9,7 @@ public class CreditCardPurchase : AggregateRoot
     public DateTime PurchaseDate { get; private set; }
     public decimal TotalAmount { get; private set; }
 
-    private readonly List<Installment> _installments = new();
-    public IReadOnlyCollection<Installment> Installments => _installments.AsReadOnly();
+    public List<Installment> Installments { get; private set; } = new();
 
     public CreditCardPurchase(Guid id, Guid creditCardId, string description, DateTime purchaseDate, decimal totalAmount) : base(id)
     {
@@ -27,6 +26,6 @@ public class CreditCardPurchase : AggregateRoot
     /// </summary>
     public void AddInstallments(IEnumerable<Installment> installments)
     {
-        _installments.AddRange(installments);
+        Installments.AddRange(installments);
     }
 }
