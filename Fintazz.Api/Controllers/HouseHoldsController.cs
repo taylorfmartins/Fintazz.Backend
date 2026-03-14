@@ -1,4 +1,5 @@
 using Fintazz.Application.HouseHolds.Commands.CreateHouseHold;
+using Fintazz.Application.HouseHolds.Queries.GetHouseHolds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,5 +27,19 @@ public class HouseHoldsController : ControllerBase
         }
 
         return Ok(new { id = result.Value });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var query = new GetHouseHoldsQuery();
+        var result = await _sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.Value);
     }
 }

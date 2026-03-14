@@ -1,6 +1,8 @@
 using Fintazz.Application.CreditCardPurchases.Commands.AddCreditCardPurchase;
 using Fintazz.Application.CreditCardPurchases.Commands.DeleteCreditCardPurchase;
+using Fintazz.Application.CreditCardPurchases.Queries.GetCreditCardPurchases;
 using Fintazz.Application.CreditCards.Commands.CreateCreditCard;
+using Fintazz.Application.CreditCards.Queries.GetCreditCardsByHouseHold;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,5 +57,33 @@ public class CreditCardsController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("house-hold/{houseHoldId}")]
+    public async Task<IActionResult> GetByHouseHold(Guid houseHoldId, CancellationToken cancellationToken)
+    {
+        var query = new GetCreditCardsByHouseHoldQuery(houseHoldId);
+        var result = await _sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpGet("{creditCardId}/purchases")]
+    public async Task<IActionResult> GetPurchases(Guid creditCardId, CancellationToken cancellationToken)
+    {
+        var query = new GetCreditCardPurchasesQuery(creditCardId);
+        var result = await _sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.Value);
     }
 }
