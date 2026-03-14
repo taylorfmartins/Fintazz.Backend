@@ -10,7 +10,13 @@ public static class DependencyInjection
     {
         services.Configure<MongoDbSettings>(configuration.GetSection(MongoDbSettings.SectionName));
         services.AddSingleton<MongoContext>();
-        
+        services.AddScoped<IHouseHoldRepository, HouseHoldRepository>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<ICreditCardRepository, CreditCardRepository>();
+        services.AddScoped<ICreditCardPurchaseRepository, CreditCardPurchaseRepository>();
+        services.AddScoped<IEstablishmentRepository, EstablishmentRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+
         return services;
     }
 }
