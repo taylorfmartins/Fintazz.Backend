@@ -14,4 +14,7 @@
   <Project Path="Fintazz.Infrastructure/Fintazz.Infrastructure.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="Fintazz.Worker/Fintazz.Worker.csproj">
+    <Platform Project="x64" />
+  </Project>
 </Solution>
