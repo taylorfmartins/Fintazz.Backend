@@ -4,7 +4,10 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
+using Microsoft.Extensions.Options;
+using Fintazz.Domain.Entities;
 using Microsoft.Extensions.Options;
 
 public class MongoContext
@@ -41,5 +44,25 @@ public class MongoContext
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         
         _conventionsConfigured = true;
+
+        RegisterDomainClasses();
+    }
+
+    private static void RegisterDomainClasses()
+    {
+        if (BsonClassMap.IsClassMapRegistered(typeof(Transaction))) return;
+
+        BsonClassMap.RegisterClassMap<Transaction>(cm =>
+        {
+            cm.AutoMap();
+            cm.SetIsRootClass(true);
+            cm.AddKnownType(typeof(IncomeTransaction));
+            cm.AddKnownType(typeof(ExpenseTransaction));
+            cm.AddKnownType(typeof(SubscriptionTransaction));
+        });
+
+        BsonClassMap.RegisterClassMap<IncomeTransaction>();
+        BsonClassMap.RegisterClassMap<ExpenseTransaction>();
+        BsonClassMap.RegisterClassMap<SubscriptionTransaction>();
     }
 }
