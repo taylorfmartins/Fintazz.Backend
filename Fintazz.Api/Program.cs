@@ -8,6 +8,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => 
 {
     c.SwaggerDoc("v1", new() { Title = "Fintazz API", Version = "v1" });
+    
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
+    var appXmlFile = "Fintazz.Application.xml";
+    var appXmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, appXmlFile);
+    if (System.IO.File.Exists(appXmlPath)) c.IncludeXmlComments(appXmlPath);
 });
 
 // Registrar camadas da Clean Architecture
@@ -48,6 +56,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fintazz API v1"));
+    app.UseReDoc(c => 
+    {
+        c.DocumentTitle = "Fintazz API Documentation";
+        c.SpecUrl = "/swagger/v1/swagger.json";
+        c.RoutePrefix = "api-docs";
+    });
 }
 
 app.UseExceptionHandler();
