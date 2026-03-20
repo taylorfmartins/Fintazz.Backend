@@ -58,7 +58,7 @@ public class ProcessRecurringChargesJob
                         today,
                         TransactionType.Expense,
                         true,  // IsPaid=true — débito automático desconta imediatamente
-                        charge.Category
+                        charge.CategoryId
                     );
 
                     var result = await _mediator.Send(command, cancellationToken);

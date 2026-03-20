@@ -8,4 +8,5 @@ public interface ICreditCardPurchaseRepository : IBaseRepository<CreditCardPurch
     
     // Ajuda muito com o BillingEngine On-The-Fly calculando faturas!
     Task<IEnumerable<CreditCardPurchase>> GetPurchasesWithUnpaidInstallmentsAsync(Guid creditCardId, CancellationToken cancellationToken = default);
+    Task DeleteManyByCardIdsAsync(IEnumerable<Guid> cardIds, CancellationToken cancellationToken = default);
 }

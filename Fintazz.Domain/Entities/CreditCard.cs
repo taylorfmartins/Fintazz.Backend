@@ -21,6 +21,14 @@ public class CreditCard : AggregateRoot
 
     protected CreditCard() { }
 
+    public void UpdateDetails(string name, decimal totalLimit, int closingDay, int dueDay)
+    {
+        Name = name;
+        TotalLimit = totalLimit;
+        ClosingDay = closingDay;
+        DueDay = dueDay;
+    }
+
     /// <summary>
     /// Calcula o limite disponível on-the-fly com base nas parcelas não pagas.
     /// </summary>

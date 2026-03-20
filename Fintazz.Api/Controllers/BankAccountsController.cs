@@ -1,6 +1,10 @@
+using Fintazz.Api.Infrastructure;
 using Fintazz.Application.BankAccounts.Commands.CreateBankAccount;
+using Fintazz.Application.BankAccounts.Commands.DeleteBankAccount;
+using Fintazz.Application.BankAccounts.Commands.UpdateBankAccount;
 using Fintazz.Application.BankAccounts.Queries.GetBankAccountsByHouseHold;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fintazz.Api.Controllers;
@@ -8,9 +12,9 @@ namespace Fintazz.Api.Controllers;
 /// <summary>
 /// Criação e listagem das Contas Bancárias atreladas a um Grupo Familiar.
 /// </summary>
-[ApiController]
+[Authorize]
 [Route("api/bank-accounts")]
-public class BankAccountsController : ControllerBase
+public class BankAccountsController : BaseApiController
 {
     private readonly ISender _sender;
 
@@ -59,4 +63,44 @@ public class BankAccountsController : ControllerBase
 
         return Ok(result.Value);
     }
+
+    /// <summary>
+    /// Edita os dados de uma conta bancária existente.
+    /// </summary>
+    /// <response code="204">Conta atualizada com sucesso.</response>
+    /// <response code="400">Dados inválidos ou conta não encontrada.</response>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateBankAccountRequest request, CancellationToken cancellationToken)
+    {
+        var command = new UpdateBankAccountCommand(id, request.Name, request.InitialBalance, request.CurrentBalance);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Exclui uma conta bancária e todas as suas transações e cobranças recorrentes associadas.
+    /// </summary>
+    /// <response code="204">Conta excluída com sucesso.</response>
+    /// <response code="400">Conta não encontrada.</response>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var command = new DeleteBankAccountCommand(id);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
 }
+
+public record UpdateBankAccountRequest(string? Name, decimal? InitialBalance, decimal? CurrentBalance);

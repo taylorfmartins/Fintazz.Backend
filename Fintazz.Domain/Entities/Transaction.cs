@@ -18,9 +18,9 @@ public abstract class Transaction : AggregateRoot
     public DateTime Date { get; protected set; }
     public TransactionType Type { get; protected set; }
     public bool IsPaid { get; protected set; }
-    public string? Category { get; protected set; }
+    public Guid? CategoryId { get; protected set; }
 
-    protected Transaction(Guid id, Guid houseHoldId, Guid bankAccountId, string description, decimal amount, DateTime date, TransactionType type, bool isPaid, string? category) : base(id)
+    protected Transaction(Guid id, Guid houseHoldId, Guid bankAccountId, string description, decimal amount, DateTime date, TransactionType type, bool isPaid, Guid? categoryId) : base(id)
     {
         HouseHoldId = houseHoldId;
         BankAccountId = bankAccountId;
@@ -29,7 +29,7 @@ public abstract class Transaction : AggregateRoot
         Date = date;
         Type = type;
         IsPaid = isPaid;
-        Category = category;
+        CategoryId = categoryId;
     }
 
     protected Transaction() { }

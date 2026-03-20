@@ -50,7 +50,7 @@ public class CreateRecurringChargeCommandHandler : IRequestHandler<CreateRecurri
             request.Description,
             request.Amount,
             request.BillingDay,
-            request.Category,
+            request.CategoryId,
             request.BankAccountId,
             request.CreditCardId,
             request.IsVariableAmount,

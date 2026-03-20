@@ -16,4 +16,10 @@ public class BankAccountRepository : MongoRepository<BankAccount>, IBankAccountR
         var filter = Builders<BankAccount>.Filter.Eq(x => x.HouseHoldId, houseHoldId);
         return await Collection.Find(filter).ToListAsync(cancellationToken);
     }
+
+    public async Task DeleteManyByHouseHoldAsync(Guid houseHoldId, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<BankAccount>.Filter.Eq(x => x.HouseHoldId, houseHoldId);
+        await Collection.DeleteManyAsync(filter, cancellationToken);
+    }
 }

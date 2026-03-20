@@ -19,6 +19,23 @@ public class BankAccount : AggregateRoot
 
     protected BankAccount() { }
 
+    public void UpdateName(string name)
+    {
+        Name = name;
+    }
+
+    public void UpdateInitialBalance(decimal newInitialBalance)
+    {
+        var delta = newInitialBalance - InitialBalance;
+        InitialBalance = newInitialBalance;
+        CurrentBalance += delta;
+    }
+
+    public void SetCurrentBalance(decimal currentBalance)
+    {
+        CurrentBalance = currentBalance;
+    }
+
     public void AddTransaction(decimal amount)
     {
         CurrentBalance += amount;

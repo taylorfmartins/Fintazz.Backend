@@ -24,4 +24,16 @@ public class TransactionRepository : MongoRepository<Transaction>, ITransactionR
 
         return await Collection.Find(filter).SortByDescending(x => x.Date).ToListAsync(cancellationToken);
     }
+
+    public async Task DeleteManyByHouseHoldAsync(Guid houseHoldId, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<Transaction>.Filter.Eq(x => x.HouseHoldId, houseHoldId);
+        await Collection.DeleteManyAsync(filter, cancellationToken);
+    }
+
+    public async Task DeleteManyByBankAccountAsync(Guid bankAccountId, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<Transaction>.Filter.Eq(x => x.BankAccountId, bankAccountId);
+        await Collection.DeleteManyAsync(filter, cancellationToken);
+    }
 }

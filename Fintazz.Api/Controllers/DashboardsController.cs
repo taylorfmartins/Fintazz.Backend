@@ -1,6 +1,8 @@
+using Fintazz.Api.Infrastructure;
 using Fintazz.Application.Dashboards.Queries.GetCreditCardInvoice;
 using Fintazz.Application.Dashboards.Queries.GetMonthlyBalance;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fintazz.Api.Controllers;
@@ -8,9 +10,9 @@ namespace Fintazz.Api.Controllers;
 /// <summary>
 /// Gerencia os relatórios e visões analíticas financeiras do Caixa Único.
 /// </summary>
-[ApiController]
+[Authorize]
 [Route("api/dashboards")]
-public class DashboardsController : ControllerBase
+public class DashboardsController : BaseApiController
 {
     private readonly ISender _sender;
 

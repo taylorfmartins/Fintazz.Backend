@@ -1,9 +1,15 @@
+using Fintazz.Api.Infrastructure;
 using Fintazz.Application.CreditCardPurchases.Commands.AddCreditCardPurchase;
 using Fintazz.Application.CreditCardPurchases.Commands.DeleteCreditCardPurchase;
 using Fintazz.Application.CreditCardPurchases.Queries.GetCreditCardPurchases;
 using Fintazz.Application.CreditCards.Commands.CreateCreditCard;
+using Fintazz.Application.CreditCards.Commands.DeleteCreditCard;
+using Fintazz.Application.CreditCards.Commands.PayInvoice;
+using Fintazz.Application.CreditCards.Commands.UpdateCreditCard;
+using Fintazz.Application.CreditCards.Queries.GetCreditCardById;
 using Fintazz.Application.CreditCards.Queries.GetCreditCardsByHouseHold;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fintazz.Api.Controllers;
@@ -11,9 +17,9 @@ namespace Fintazz.Api.Controllers;
 /// <summary>
 /// Gerenciamento de Cartões de Crédito e Faturas do sistema.
 /// </summary>
-[ApiController]
+[Authorize]
 [Route("api/credit-cards")]
-public class CreditCardsController : ControllerBase
+public class CreditCardsController : BaseApiController
 {
     private readonly ISender _sender;
 
@@ -87,10 +93,36 @@ public class CreditCardsController : ControllerBase
     }
 
     /// <summary>
+    /// Recupera os dados de um cartão de crédito específico por ID, incluindo seu limite em tempo real.
+    /// </summary>
+    /// <param name="id">ID do Cartão de Crédito.</param>
+    /// <response code="200">Cartão retornado com êxito.</response>
+    /// <response code="404">A API não conseguiu localizar um Cartão atribuído a essa chave primária.</response>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(CreditCardResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var query = new GetCreditCardByIdQuery(id);
+        var result = await _sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error.Code == "CreditCard.NotFound")
+                return NotFound(result.Error);
+                
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
     /// Lista os cartões de crédito configurados em um ecossistema baseando no id do grupo familiar.
     /// </summary>
+    /// <response code="200">Retorna a listagem dos cartões contendo informações cadastradas e seus limites dinâmicos ativamente calculados com base nas faturas.</response>
     [HttpGet("house-hold/{houseHoldId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<CreditCardResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByHouseHold(Guid houseHoldId, CancellationToken cancellationToken)
     {
         var query = new GetCreditCardsByHouseHoldQuery(houseHoldId);
@@ -121,4 +153,64 @@ public class CreditCardsController : ControllerBase
 
         return Ok(result.Value);
     }
+
+    /// <summary>
+    /// Edita os dados de um cartão de crédito existente.
+    /// </summary>
+    /// <response code="204">Cartão atualizado com sucesso.</response>
+    /// <response code="400">Dados inválidos ou cartão não encontrado.</response>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCreditCardRequest request, CancellationToken cancellationToken)
+    {
+        var command = new UpdateCreditCardCommand(id, request.Name, request.TotalLimit, request.ClosingDay, request.DueDay);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Exclui um cartão de crédito e todas as suas compras e cobranças recorrentes associadas.
+    /// </summary>
+    /// <response code="204">Cartão excluído com sucesso.</response>
+    /// <response code="400">Cartão não encontrado.</response>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var command = new DeleteCreditCardCommand(id);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Paga a fatura de um cartão de crédito, debitando uma conta bancária e marcando as parcelas como pagas.
+    /// </summary>
+    /// <response code="200">Retorna o ID da transação de pagamento gerada.</response>
+    /// <response code="400">Fatura vazia, conta ou cartão não encontrado.</response>
+    [HttpPost("{id}/invoice/pay")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> PayInvoice(Guid id, [FromBody] PayInvoiceRequest request, CancellationToken cancellationToken)
+    {
+        var command = new PayInvoiceCommand(id, request.BankAccountId, request.Month, request.Year);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return Ok(new { id = result.Value });
+    }
 }
+
+public record UpdateCreditCardRequest(string Name, decimal TotalLimit, int ClosingDay, int DueDay);
+public record PayInvoiceRequest(Guid BankAccountId, int Month, int Year);

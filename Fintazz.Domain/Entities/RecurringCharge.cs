@@ -8,7 +8,7 @@ public class RecurringCharge : AggregateRoot
     public string Description { get; private set; }
     public decimal Amount { get; private set; }
     public int BillingDay { get; private set; }
-    public string? Category { get; private set; }
+    public Guid? CategoryId { get; private set; }
     public Guid? BankAccountId { get; private set; }
     public Guid? CreditCardId { get; private set; }
     public bool IsVariableAmount { get; private set; }
@@ -16,16 +16,16 @@ public class RecurringCharge : AggregateRoot
     public bool IsActive { get; private set; }
 
     public RecurringCharge(
-        Guid id, 
-        Guid houseHoldId, 
-        string description, 
-        decimal amount, 
-        int billingDay, 
-        string? category, 
-        Guid? bankAccountId, 
-        Guid? creditCardId, 
-        bool isVariableAmount, 
-        bool autoApprove) 
+        Guid id,
+        Guid houseHoldId,
+        string description,
+        decimal amount,
+        int billingDay,
+        Guid? categoryId,
+        Guid? bankAccountId,
+        Guid? creditCardId,
+        bool isVariableAmount,
+        bool autoApprove)
         : base(id)
     {
         if (bankAccountId.HasValue && creditCardId.HasValue)
@@ -41,7 +41,7 @@ public class RecurringCharge : AggregateRoot
         Description = description;
         Amount = amount;
         BillingDay = billingDay;
-        Category = category;
+        CategoryId = categoryId;
         BankAccountId = bankAccountId;
         CreditCardId = creditCardId;
         IsVariableAmount = isVariableAmount;
@@ -51,7 +51,7 @@ public class RecurringCharge : AggregateRoot
 
     protected RecurringCharge() { }
 
-    public void UpdateDetails(string description, decimal amount, int billingDay, string? category, bool isVariableAmount, bool autoApprove)
+    public void UpdateDetails(string description, decimal amount, int billingDay, Guid? categoryId, bool isVariableAmount, bool autoApprove)
     {
         if (billingDay < 1 || billingDay > 31)
             throw new ArgumentException("Billing Day must be between 1 and 31.");
@@ -59,7 +59,7 @@ public class RecurringCharge : AggregateRoot
         Description = description;
         Amount = amount;
         BillingDay = billingDay;
-        Category = category;
+        CategoryId = categoryId;
         IsVariableAmount = isVariableAmount;
         AutoApprove = autoApprove;
     }

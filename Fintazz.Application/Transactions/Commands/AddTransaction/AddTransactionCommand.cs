@@ -13,7 +13,7 @@ using Fintazz.Domain.Entities;
 /// <param name="Date">Data correta de quando a transação ocorreu ou ocorrerá.</param>
 /// <param name="Type">Determina o tipo da transação. Valores permitidos: `Income` ou `Expense`.</param>
 /// <param name="IsPaid">Caso True, já debitou na conta real (altera saldo). Caso False, é uma previsão.</param>
-/// <param name="Category">Agrupador/Categoria.</param>
+/// <param name="CategoryId">ID da categoria financeira (opcional).</param>
 public record AddTransactionCommand(
     Guid HouseHoldId,
     Guid BankAccountId,
@@ -22,4 +22,4 @@ public record AddTransactionCommand(
     DateTime Date,
     TransactionType Type,
     bool IsPaid,
-    string? Category) : ICommand<Guid>;
+    Guid? CategoryId = null) : ICommand<Guid>;

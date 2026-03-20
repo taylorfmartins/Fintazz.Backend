@@ -44,8 +44,8 @@ public class AddTransactionCommandHandler : ICommandHandler<AddTransactionComman
 
         Transaction transaction = request.Type switch
         {
-            TransactionType.Income => new IncomeTransaction(Guid.NewGuid(), request.HouseHoldId, request.BankAccountId, request.Description, request.Amount, request.Date, request.IsPaid, request.Category),
-            TransactionType.Expense => new ExpenseTransaction(Guid.NewGuid(), request.HouseHoldId, request.BankAccountId, request.Description, request.Amount, request.Date, request.IsPaid, request.Category),
+            TransactionType.Income => new IncomeTransaction(Guid.NewGuid(), request.HouseHoldId, request.BankAccountId, request.Description, request.Amount, request.Date, request.IsPaid, request.CategoryId),
+            TransactionType.Expense => new ExpenseTransaction(Guid.NewGuid(), request.HouseHoldId, request.BankAccountId, request.Description, request.Amount, request.Date, request.IsPaid, request.CategoryId),
             TransactionType.Subscription => throw new NotImplementedException("Assinaturas possuem um fluxo separado."),
             _ => throw new ArgumentOutOfRangeException()
         };

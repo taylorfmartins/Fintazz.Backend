@@ -16,7 +16,7 @@ public class CreateHouseHoldCommandHandler : ICommandHandler<CreateHouseHoldComm
 
     public async Task<Result<Guid>> Handle(CreateHouseHoldCommand request, CancellationToken cancellationToken)
     {
-        var houseHold = new HouseHold(Guid.NewGuid(), request.Name);
+        var houseHold = new HouseHold(Guid.NewGuid(), request.Name, request.AdminUserId);
 
         await _houseHoldRepository.AddAsync(houseHold, cancellationToken);
 

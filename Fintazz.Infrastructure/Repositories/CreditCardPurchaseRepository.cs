@@ -21,9 +21,15 @@ public class CreditCardPurchaseRepository : MongoRepository<CreditCardPurchase>,
     {
         // Precisamos retornar o documento base da compra em que QUALQUER UMA de suas parcelas ainda não esteja paga.
         var builder = Builders<CreditCardPurchase>.Filter;
-        var filter = builder.Eq(x => x.CreditCardId, creditCardId) 
+        var filter = builder.Eq(x => x.CreditCardId, creditCardId)
                      & builder.ElemMatch(x => x.Installments, i => i.IsPaid == false);
-                     
+
         return await Collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
+    public async Task DeleteManyByCardIdsAsync(IEnumerable<Guid> cardIds, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<CreditCardPurchase>.Filter.In(x => x.CreditCardId, cardIds);
+        await Collection.DeleteManyAsync(filter, cancellationToken);
     }
 }

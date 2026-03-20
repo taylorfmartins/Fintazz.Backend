@@ -10,7 +10,7 @@ using Fintazz.Domain.Shared;
 /// <param name="Description">Descrição exibida todo mês (ex: Netflix Mensal, Conta de Luz).</param>
 /// <param name="Amount">Valor da cobrança.</param>
 /// <param name="BillingDay">Dia do mês em que esta cobrança vence e deve ser faturada (1 a 31).</param>
-/// <param name="Category">Categoria financeira (ex: Lazer, Moradia).</param>
+/// <param name="CategoryId">ID da categoria financeira.</param>
 /// <param name="BankAccountId">Se for um débito automático, informe este ID.</param>
 /// <param name="CreditCardId">Se for uma assinatura no cartão, informe este ID.</param>
 /// <param name="IsVariableAmount">Indica se o valor varia mês a mês (ex: conta de água).</param>
@@ -20,7 +20,7 @@ public record CreateRecurringChargeCommand(
     string Description,
     decimal Amount,
     int BillingDay,
-    string? Category,
+    Guid? CategoryId,
     Guid? BankAccountId,
     Guid? CreditCardId,
     bool IsVariableAmount,
