@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 public class UserRepository : MongoRepository<User>, IUserRepository
 {
-    public UserRepository(MongoContext context) : base(context, "users") { }
+    public UserRepository(MongoContext context) : base(context, "Users") { }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {

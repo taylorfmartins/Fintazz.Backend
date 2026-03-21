@@ -5,7 +5,7 @@ namespace Fintazz.Application.HouseHolds.Queries.GetHouseHoldMembers;
 /// </summary>
 /// <param name="UserId">ID do usuário.</param>
 /// <param name="FullName">Nome completo do membro.</param>
-/// <param name="NickName">Apelido do membro.</param>
+/// <param name="NickName">Apelido do membro no sistema.</param>
 /// <param name="Email">E-mail do membro.</param>
 /// <param name="IsAdmin">Indica se o membro é o Administrador do grupo.</param>
 public record HouseHoldMemberResponse(
