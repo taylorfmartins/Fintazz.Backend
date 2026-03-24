@@ -1,8 +1,10 @@
 using Fintazz.Api.Infrastructure;
+using CreatedResponse = Fintazz.Api.Infrastructure.CreatedResponse;
 using Fintazz.Application.BankAccounts.Commands.CreateBankAccount;
 using Fintazz.Application.BankAccounts.Commands.DeleteBankAccount;
 using Fintazz.Application.BankAccounts.Commands.UpdateBankAccount;
 using Fintazz.Application.BankAccounts.Queries.GetBankAccountsByHouseHold;
+using BankAccountResponse = Fintazz.Application.BankAccounts.Queries.GetBankAccountsByHouseHold.BankAccountResponse;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +32,7 @@ public class BankAccountsController : BaseApiController
     /// <response code="200">Conta bancária criada com sucesso.</response>
     /// <response code="400">Dados inválidos (ex: nome faltando).</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateBankAccountCommand command, CancellationToken cancellationToken)
     {
@@ -41,7 +43,7 @@ public class BankAccountsController : BaseApiController
             return BadRequest(result.Error);
         }
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 
     /// <summary>
@@ -50,7 +52,7 @@ public class BankAccountsController : BaseApiController
     /// <param name="houseHoldId">Identificador único do HouseHold.</param>
     /// <response code="200">Lista de contas bancárias e seus respectivos saldos atuais.</response>
     [HttpGet("house-hold/{houseHoldId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<BankAccountResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByHouseHold(Guid houseHoldId, CancellationToken cancellationToken)
     {
         var query = new GetBankAccountsByHouseHoldQuery(houseHoldId);
@@ -65,8 +67,10 @@ public class BankAccountsController : BaseApiController
     }
 
     /// <summary>
-    /// Edita os dados de uma conta bancária existente.
+    /// Edita os dados de uma conta bancária existente (nome, saldo inicial e/ou ajuste manual de saldo).
     /// </summary>
+    /// <param name="id">ID da conta bancária.</param>
+    /// <param name="request">Campos a atualizar — todos são opcionais; apenas os informados são alterados.</param>
     /// <response code="204">Conta atualizada com sucesso.</response>
     /// <response code="400">Dados inválidos ou conta não encontrada.</response>
     [HttpPut("{id}")]
@@ -84,8 +88,9 @@ public class BankAccountsController : BaseApiController
     }
 
     /// <summary>
-    /// Exclui uma conta bancária e todas as suas transações e cobranças recorrentes associadas.
+    /// Exclui uma conta bancária e todas as suas transações e cobranças recorrentes associadas em cascata.
     /// </summary>
+    /// <param name="id">ID da conta bancária.</param>
     /// <response code="204">Conta excluída com sucesso.</response>
     /// <response code="400">Conta não encontrada.</response>
     [HttpDelete("{id}")]
@@ -103,4 +108,8 @@ public class BankAccountsController : BaseApiController
     }
 }
 
+/// <summary>Campos para edição de uma conta bancária — todos opcionais.</summary>
+/// <param name="Name">Novo nome da conta (opcional).</param>
+/// <param name="InitialBalance">Novo saldo inicial — recalcula o saldo atual proporcionalmente (opcional).</param>
+/// <param name="CurrentBalance">Ajuste manual direto do saldo atual (opcional).</param>
 public record UpdateBankAccountRequest(string? Name, decimal? InitialBalance, decimal? CurrentBalance);

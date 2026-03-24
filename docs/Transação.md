@@ -40,19 +40,21 @@ Pago = false            → Saldo não é alterado
 ## Endpoints
 
 - `POST /api/transactions` — Registra uma nova transação (receita ou despesa)
-- `DELETE /api/transactions/{id}` — Deleta uma transação
-- `PATCH /api/transactions/{id}` — Atualiza uma transação
-- `GET /api/transactions/house-hold/{houseHoldId}` — Lista o extrato de transações de um grupo familiar
-    - Parâmetros opcionais: `startDate` e `endDate` para filtrar por período
+- `DELETE /api/transactions/{id}` — Remove permanentemente uma transação, revertendo o saldo se já estava paga
+- `PATCH /api/transactions/{id}/pay` — Efetiva uma transação prevista, atualizando o saldo da conta
+- `GET /api/transactions/house-hold/{houseHoldId}` — Lista o extrato de transações de um grupo familiar com paginação
+    - Parâmetros opcionais: `page` (padrão 1), `pageSize` (padrão 20), `startDate` e `endDate` para filtrar por período
 
 ## Consulta de Extrato
 
-- O extrato retorna todas as transações de todas as contas do grupo no período informado
+- O extrato retorna as transações de todas as contas do grupo no período informado, paginadas
 - Os resultados são ordenados por data de forma decrescente (mais recentes primeiro)
 - Sem filtro de data, retorna todas as transações do grupo sem limite de período
+- A resposta inclui metadados de paginação: `totalCount`, `totalPages`, `hasNextPage`, `hasPreviousPage`
+- Os campos `bankAccountName` e `categoryName` são retornados já resolvidos (sem necessidade de lookups adicionais no frontend)
 
 ## Situação Atual no Código
 
-- O campo [[Categoria]] é atualmente um `string?` livre — será substituído por uma referência ao `Id` da entidade `Category` quando o módulo de [[Categoria]] for implementado
-- Ainda não existe endpoint para marcar uma transação prevista (`Pago = false`) como efetivada (`Pago = true`) — está listado como pendente no [[Backend]]
-- Ainda não existe endpoint de exclusão de transação — está indicado na especificação original mas ainda não foi implementado
+- Módulo completo e operacional: criação, exclusão, efetivação e listagem com paginação implementadas
+- O campo `CategoryId` referencia a entidade `Category` — o módulo de categorias está implementado
+- O tipo `Subscription` não pode ser criado manualmente — é gerado pelo Worker via [[Transações Recorrentes]]

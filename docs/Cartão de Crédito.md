@@ -98,6 +98,6 @@ Os seguintes campos podem ser alterados:
 
 ## Situação Atual no Código
 
-- Criação, listagem, compras e estorno de compras estão implementados
-- Edição e exclusão do cartão são pendentes
+- Módulo completo e operacional: criação, listagem, edição, exclusão, compras, estorno e pagamento de fatura implementados
 - Alteração do Dia de Fechamento não recalcula parcelas já existentes — comportamento intencional
+- [[Transações Recorrentes]] que apontam para o cartão excluído são desativadas automaticamente (soft delete) na exclusão em cascata

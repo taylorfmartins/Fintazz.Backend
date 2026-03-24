@@ -16,7 +16,7 @@ public class GetHouseHoldsQueryHandler : IQueryHandler<GetHouseHoldsQuery, IEnum
 
     public async Task<Result<IEnumerable<HouseHold>>> Handle(GetHouseHoldsQuery request, CancellationToken cancellationToken)
     {
-        var result = await _houseHoldRepository.GetAllAsync(cancellationToken);
+        var result = await _houseHoldRepository.GetByUserIdAsync(request.UserId, cancellationToken);
         
         return Result<IEnumerable<HouseHold>>.Success(result);
     }

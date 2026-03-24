@@ -1,4 +1,5 @@
 using Fintazz.Api.Infrastructure;
+using CreatedResponse = Fintazz.Api.Infrastructure.CreatedResponse;
 using Fintazz.Application.CreditCardPurchases.Commands.AddCreditCardPurchase;
 using Fintazz.Application.CreditCardPurchases.Commands.DeleteCreditCardPurchase;
 using Fintazz.Application.CreditCardPurchases.Queries.GetCreditCardPurchases;
@@ -8,6 +9,7 @@ using Fintazz.Application.CreditCards.Commands.PayInvoice;
 using Fintazz.Application.CreditCards.Commands.UpdateCreditCard;
 using Fintazz.Application.CreditCards.Queries.GetCreditCardById;
 using Fintazz.Application.CreditCards.Queries.GetCreditCardsByHouseHold;
+using Fintazz.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +36,7 @@ public class CreditCardsController : BaseApiController
     /// <response code="200">Retorna o ID do novo cartão.</response>
     /// <response code="400">Erros de validação (limite zero, dias de fatura inválidos).</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateCreditCardCommand command, CancellationToken cancellationToken)
     {
@@ -45,19 +47,20 @@ public class CreditCardsController : BaseApiController
             return BadRequest(result.Error);
         }
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 
     /// <summary>
     /// Registra e processa uma nova compra em um cartão de crédito existente.
     /// </summary>
     /// <remarks>
-    /// Essa rota processa automaticamente parcelamentos da compra. Se você informar 3 de número de parcelas, ela dividirá o total e ajustará o primeiro centavo para que a soma bata. 
+    /// Essa rota processa automaticamente parcelamentos da compra. Se você informar 3 de número de parcelas, ela dividirá o total e ajustará o primeiro centavo para que a soma bata.
     /// As faturas também serão populadas de acordo.
     /// </remarks>
+    /// <param name="command">Dados da compra (cartão, descrição, valor, parcelas e data).</param>
     /// <response code="200">ID da compra salva com sucesso no banco.</response>
     [HttpPost("purchases")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddPurchase([FromBody] AddCreditCardPurchaseCommand command, CancellationToken cancellationToken)
     {
@@ -68,7 +71,7 @@ public class CreditCardsController : BaseApiController
             return BadRequest(result.Error);
         }
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 
     /// <summary>
@@ -118,9 +121,10 @@ public class CreditCardsController : BaseApiController
     }
 
     /// <summary>
-    /// Lista os cartões de crédito configurados em um ecossistema baseando no id do grupo familiar.
+    /// Lista os cartões de crédito de um grupo familiar com limites calculados dinamicamente.
     /// </summary>
-    /// <response code="200">Retorna a listagem dos cartões contendo informações cadastradas e seus limites dinâmicos ativamente calculados com base nas faturas.</response>
+    /// <param name="houseHoldId">ID do grupo familiar.</param>
+    /// <response code="200">Lista de cartões com limite total e disponível atualizados.</response>
     [HttpGet("house-hold/{houseHoldId}")]
     [ProducesResponseType(typeof(IEnumerable<CreditCardResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByHouseHold(Guid houseHoldId, CancellationToken cancellationToken)
@@ -137,10 +141,14 @@ public class CreditCardsController : BaseApiController
     }
 
     /// <summary>
-    /// Extrato geral bruto de todas as compras de um determinado cartão, independente da fatura.
+    /// Lista todas as compras de um cartão de crédito, independente da fatura.
     /// </summary>
+    /// <param name="creditCardId">ID do cartão de crédito.</param>
+    /// <response code="200">Lista de compras com parcelas agrupadas.</response>
+    /// <response code="400">Cartão não encontrado.</response>
     [HttpGet("{creditCardId}/purchases")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<CreditCardPurchase>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPurchases(Guid creditCardId, CancellationToken cancellationToken)
     {
         var query = new GetCreditCardPurchasesQuery(creditCardId);
@@ -157,6 +165,8 @@ public class CreditCardsController : BaseApiController
     /// <summary>
     /// Edita os dados de um cartão de crédito existente.
     /// </summary>
+    /// <param name="id">ID do cartão de crédito.</param>
+    /// <param name="request">Novos dados do cartão (nome, limite, dias de fechamento e vencimento).</param>
     /// <response code="204">Cartão atualizado com sucesso.</response>
     /// <response code="400">Dados inválidos ou cartão não encontrado.</response>
     [HttpPut("{id}")]
@@ -176,6 +186,7 @@ public class CreditCardsController : BaseApiController
     /// <summary>
     /// Exclui um cartão de crédito e todas as suas compras e cobranças recorrentes associadas.
     /// </summary>
+    /// <param name="id">ID do cartão de crédito.</param>
     /// <response code="204">Cartão excluído com sucesso.</response>
     /// <response code="400">Cartão não encontrado.</response>
     [HttpDelete("{id}")]
@@ -195,10 +206,12 @@ public class CreditCardsController : BaseApiController
     /// <summary>
     /// Paga a fatura de um cartão de crédito, debitando uma conta bancária e marcando as parcelas como pagas.
     /// </summary>
-    /// <response code="200">Retorna o ID da transação de pagamento gerada.</response>
+    /// <param name="id">ID do cartão de crédito.</param>
+    /// <param name="request">Conta bancária que realizará o débito e o mês/ano da fatura.</param>
+    /// <response code="200">ID da transação de pagamento gerada.</response>
     /// <response code="400">Fatura vazia, conta ou cartão não encontrado.</response>
     [HttpPost("{id}/invoice/pay")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PayInvoice(Guid id, [FromBody] PayInvoiceRequest request, CancellationToken cancellationToken)
     {
@@ -208,9 +221,19 @@ public class CreditCardsController : BaseApiController
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 }
 
+/// <summary>Dados para edição de um cartão de crédito.</summary>
+/// <param name="Name">Novo nome do cartão.</param>
+/// <param name="TotalLimit">Novo limite total.</param>
+/// <param name="ClosingDay">Novo dia de fechamento da fatura (1-31).</param>
+/// <param name="DueDay">Novo dia de vencimento da fatura (1-31).</param>
 public record UpdateCreditCardRequest(string Name, decimal TotalLimit, int ClosingDay, int DueDay);
+
+/// <summary>Dados para pagamento de fatura.</summary>
+/// <param name="BankAccountId">ID da conta bancária que realizará o débito.</param>
+/// <param name="Month">Mês da fatura (1-12).</param>
+/// <param name="Year">Ano da fatura.</param>
 public record PayInvoiceRequest(Guid BankAccountId, int Month, int Year);

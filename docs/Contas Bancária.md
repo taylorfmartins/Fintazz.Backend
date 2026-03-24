@@ -51,5 +51,5 @@ Os seguintes campos podem ser alterados:
 
 ## Situação Atual no Código
 
-- Apenas criação e listagem estão implementadas — edição e exclusão são pendentes
+- Criação, listagem, edição e exclusão estão implementadas e operacionais
 - Não existe proteção contra saldo negativo — pode ser uma regra a avaliar no futuro

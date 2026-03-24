@@ -19,11 +19,12 @@
 - `POST /api/categories` — Cadastra uma nova categoria
 - `GET /api/categories/house-hold/{houseHoldId}` — Lista todas as categorias de um grupo familiar
 - `GET /api/categories/{id}` — Retorna os dados de uma categoria
-- `PATCH /api/categorias/{id}` — Atualiza os dados de uma categoria
+- `PUT /api/categories/{id}` — Renomeia uma categoria existente
 - `DELETE /api/categories/{id}` — Remove uma categoria (apenas se não estiver em uso)
 
 ## Situação Atual no Código
 
-- Hoje a categoria é armazenada como um campo `string?` livre nas entidades `Transaction` e `RecurringCharge`
-- A implementação deste módulo deverá substituir esse campo livre por uma referência ao `Id` da entidade `Category`
-- Será necessário criar a entidade `Category`, o repositório `ICategoryRepository`, os commands de criação e exclusão, a query de listagem e o `CategoriesController`
+- Módulo completo e operacional: criação, listagem, consulta por ID, renomeação e exclusão implementadas
+- `Transaction` e `RecurringCharge` referenciam `Category` pelo `CategoryId` (Guid) — o campo `string?` livre não existe mais
+- A exclusão é bloqueada se a categoria estiver em uso por alguma transação ou cobrança recorrente
+- O tipo (`Income`/`Expense`) é serializado como string na API — os valores inteiros não são expostos

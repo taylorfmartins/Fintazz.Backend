@@ -75,7 +75,7 @@ O meio de pagamento ([[Contas Bancária]] ou [[Cartão de Crédito]]) e o Dia de
 
 ## Situação Atual no Código
 
-- Cadastro, listagem de ativas e cancelamento (soft delete) estão implementados
-- O Worker já processa automaticamente as recorrentes com `Lançar Automaticamente = true`
-- Edição, reativação e aprovação manual são pendentes
-- Cobranças com `Valor Variável = true` ainda não possuem tratamento diferenciado no Worker — são processadas da mesma forma que as fixas
+- Módulo completo e operacional: cadastro, listagem, cancelamento, edição, reativação e aprovação manual implementados
+- O Worker processa automaticamente as recorrentes com `Lançar Automaticamente = true`
+- Cobranças com `Valor Variável = true` aguardam aprovação manual — o Worker não as lança automaticamente, independente do campo `Lançar Automaticamente`
+- A listagem (`GET /api/recurring-charges/house-hold/{houseHoldId}`) retorna os campos `categoryName`, `bankAccountName` e `creditCardName` já resolvidos

@@ -1,6 +1,7 @@
 namespace Fintazz.Api.Controllers;
 
 using Fintazz.Api.Infrastructure;
+using CreatedResponse = Fintazz.Api.Infrastructure.CreatedResponse;
 using Fintazz.Application.Categories.Commands.CreateCategory;
 using Fintazz.Application.Categories.Commands.DeleteCategory;
 using Fintazz.Application.Categories.Commands.UpdateCategory;
@@ -30,7 +31,7 @@ public class CategoriesController : BaseApiController
     /// <response code="200">Retorna o ID da categoria criada.</response>
     /// <response code="400">Nome duplicado ou dados inválidos.</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
@@ -40,12 +41,13 @@ public class CategoriesController : BaseApiController
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 
     /// <summary>
     /// Lista todas as categorias de um HouseHold.
     /// </summary>
+    /// <param name="houseHoldId">ID do grupo familiar.</param>
     /// <response code="200">Lista de categorias ordenada por nome.</response>
     [HttpGet("house-hold/{houseHoldId}")]
     [ProducesResponseType(typeof(IEnumerable<CategoryResponse>), StatusCodes.Status200OK)]
@@ -63,6 +65,7 @@ public class CategoriesController : BaseApiController
     /// <summary>
     /// Retorna uma categoria específica pelo ID.
     /// </summary>
+    /// <param name="id">ID da categoria.</param>
     /// <response code="200">Categoria encontrada.</response>
     /// <response code="404">Categoria não encontrada.</response>
     [HttpGet("{id}")]
@@ -87,6 +90,8 @@ public class CategoriesController : BaseApiController
     /// <summary>
     /// Renomeia uma categoria existente.
     /// </summary>
+    /// <param name="id">ID da categoria.</param>
+    /// <param name="request">Novo nome da categoria.</param>
     /// <response code="204">Categoria atualizada com sucesso.</response>
     /// <response code="400">Nome duplicado ou dados inválidos.</response>
     [HttpPut("{id}")]
@@ -104,8 +109,9 @@ public class CategoriesController : BaseApiController
     }
 
     /// <summary>
-    /// Exclui uma categoria. Não é possível excluir categorias em uso.
+    /// Exclui uma categoria. Não é possível excluir categorias em uso por transações ou cobranças recorrentes.
     /// </summary>
+    /// <param name="id">ID da categoria.</param>
     /// <response code="204">Categoria excluída com sucesso.</response>
     /// <response code="400">Categoria em uso ou não encontrada.</response>
     [HttpDelete("{id}")]

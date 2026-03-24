@@ -1,3 +1,4 @@
+using Fintazz.Api.Infrastructure;
 using Fintazz.Application.Auth.Commands;
 using Fintazz.Application.Auth.Commands.Login;
 using Fintazz.Application.Auth.Commands.RefreshToken;
@@ -24,10 +25,11 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Cadastra um novo usuário no sistema.
     /// </summary>
+    /// <param name="command">Dados do novo usuário: nome completo, apelido, e-mail, data de nascimento e senha.</param>
     /// <response code="200">Retorna o ID do usuário criado.</response>
     /// <response code="400">Erros de validação ou e-mail já cadastrado.</response>
     [HttpPost("register")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterUserCommand command, CancellationToken cancellationToken)
     {
@@ -36,12 +38,13 @@ public class AuthController : ControllerBase
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 
     /// <summary>
     /// Autentica o usuário com e-mail e senha, retornando um par de tokens JWT.
     /// </summary>
+    /// <param name="command">Credenciais de acesso: e-mail e senha.</param>
     /// <response code="200">Tokens gerados com sucesso.</response>
     /// <response code="400">Credenciais inválidas.</response>
     [HttpPost("login")]
@@ -60,6 +63,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Renova o AccessToken usando um RefreshToken válido, sem necessidade de novo login.
     /// </summary>
+    /// <param name="command">O RefreshToken obtido no login ou na última renovação.</param>
     /// <response code="200">Novo par de tokens gerado com sucesso.</response>
     /// <response code="400">RefreshToken inválido ou expirado.</response>
     [HttpPost("refresh")]

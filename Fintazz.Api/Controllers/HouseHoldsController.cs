@@ -1,4 +1,6 @@
 using Fintazz.Api.Infrastructure;
+using CreatedResponse = Fintazz.Api.Infrastructure.CreatedResponse;
+using Fintazz.Domain.Entities;
 using Fintazz.Application.HouseHolds.Commands.AcceptInvite;
 using Fintazz.Application.HouseHolds.Commands.CreateHouseHold;
 using Fintazz.Application.HouseHolds.Commands.DeleteHouseHold;
@@ -33,7 +35,7 @@ public class HouseHoldsController : BaseApiController
     /// <response code="200">Grupo familiar criado, retorna o ID gerado.</response>
     /// <response code="400">Ocorreram erros de validação (ex: nome vazio).</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateHouseHoldRequest request, CancellationToken cancellationToken)
     {
@@ -43,7 +45,7 @@ public class HouseHoldsController : BaseApiController
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 
     /// <summary>
@@ -97,14 +99,14 @@ public class HouseHoldsController : BaseApiController
     }
 
     /// <summary>
-    /// Lista todos os Grupos Familiares cadastrados no banco de dados.
+    /// Lista os Grupos Familiares do usuário autenticado (como membro ou administrador).
     /// </summary>
-    /// <response code="200">Lista recuperada com sucesso.</response>
+    /// <response code="200">Lista de grupos familiares do usuário.</response>
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<HouseHold>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var query = new GetHouseHoldsQuery();
+        var query = new GetHouseHoldsQuery(CurrentUserId);
         var result = await _sender.Send(query, cancellationToken);
 
         if (result.IsFailure)
@@ -170,7 +172,7 @@ public class HouseHoldsController : BaseApiController
     /// <response code="400">Permissão negada, e-mail já é membro ou convite pendente.</response>
     /// <response code="404">Grupo não encontrado ou usuário convidado não cadastrado.</response>
     [HttpPost("{id}/invites")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreatedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> SendInvite(Guid id, [FromBody] SendInviteRequest request, CancellationToken cancellationToken)
@@ -184,7 +186,7 @@ public class HouseHoldsController : BaseApiController
             return BadRequest(result.Error);
         }
 
-        return Ok(new { id = result.Value });
+        return Ok(new CreatedResponse(result.Value));
     }
 
     /// <summary>

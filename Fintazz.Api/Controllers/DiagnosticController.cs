@@ -4,6 +4,9 @@ using MongoDB.Driver;
 
 namespace Fintazz.Api.Controllers;
 
+/// <summary>
+/// Endpoints de diagnóstico interno — verificação de conectividade e saúde da infraestrutura.
+/// </summary>
 [ApiController]
 [Route("api/diagnostic")]
 public class DiagnosticController : ControllerBase
@@ -15,7 +18,14 @@ public class DiagnosticController : ControllerBase
         _mongoContext = mongoContext;
     }
 
+    /// <summary>
+    /// Verifica a conectividade com o banco de dados MongoDB Atlas.
+    /// </summary>
+    /// <response code="200">Conexão estabelecida com sucesso.</response>
+    /// <response code="500">Falha ao conectar ao banco de dados.</response>
     [HttpGet("ping-database")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> PingDatabase()
     {
         try

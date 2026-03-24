@@ -1,11 +1,10 @@
 namespace Fintazz.Application.BankAccounts.Queries.GetBankAccountsByHouseHold;
 
 using Fintazz.Application.Abstractions.Messaging;
-using Fintazz.Domain.Entities;
 using Fintazz.Domain.Repositories;
 using Fintazz.Domain.Shared;
 
-public class GetBankAccountsByHouseHoldQueryHandler : IQueryHandler<GetBankAccountsByHouseHoldQuery, IEnumerable<BankAccount>>
+public class GetBankAccountsByHouseHoldQueryHandler : IQueryHandler<GetBankAccountsByHouseHoldQuery, IEnumerable<BankAccountResponse>>
 {
     private readonly IBankAccountRepository _bankAccountRepository;
 
@@ -14,10 +13,17 @@ public class GetBankAccountsByHouseHoldQueryHandler : IQueryHandler<GetBankAccou
         _bankAccountRepository = bankAccountRepository;
     }
 
-    public async Task<Result<IEnumerable<BankAccount>>> Handle(GetBankAccountsByHouseHoldQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<BankAccountResponse>>> Handle(GetBankAccountsByHouseHoldQuery request, CancellationToken cancellationToken)
     {
         var accounts = await _bankAccountRepository.GetBankAccountsByHouseHoldAsync(request.HouseHoldId, cancellationToken);
-        
-        return Result<IEnumerable<BankAccount>>.Success(accounts);
+
+        var response = accounts.Select(a => new BankAccountResponse(
+            Id:             a.Id,
+            HouseHoldId:    a.HouseHoldId,
+            Name:           a.Name,
+            InitialBalance: a.InitialBalance,
+            CurrentBalance: a.CurrentBalance));
+
+        return Result<IEnumerable<BankAccountResponse>>.Success(response);
     }
 }

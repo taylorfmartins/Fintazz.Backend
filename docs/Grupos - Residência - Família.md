@@ -29,7 +29,7 @@
 - `POST /api/house-holds` — Cria um novo grupo familiar
 - `PUT /api/house-holds/{id}` — Edita o nome do grupo (apenas Administrador)
 - `DELETE /api/house-holds/{id}` — Remove o grupo e todos os dados vinculados em cascata (apenas Administrador)
-- `GET /api/house-holds` — Lista todos os grupos do sistema
+- `GET /api/house-holds` — Lista os grupos familiares do usuário autenticado (como membro ou administrador)
 - `GET /api/house-holds/{id}/members` — Lista os membros de um grupo
 - `DELETE /api/house-holds/{id}/members/{userId}` — Remove um membro do grupo (apenas Administrador)
 - `POST /api/house-holds/{id}/invites` — Envia um convite para um e-mail (apenas Administrador)
@@ -54,7 +54,8 @@
 
 ## Situação Atual no Código
 
-- Apenas criação e listagem geral estão implementadas
-- Não existe ainda o conceito de Administrador nem controle de permissões — todos os endpoints são abertos
-- Convites, listagem de membros, edição e exclusão do grupo são pendentes
-- A implementação de autenticação via [[Cadastro de Usuário]] é pré-requisito para que as regras de Administrador e controle de acesso por grupo funcionem
+- Módulo completo e operacional: criação, edição, exclusão em cascata, listagem, membros e convites implementados
+- O controle de Administrador está ativo — apenas o criador do grupo pode editar, excluir e gerenciar membros
+- `GET /api/house-holds` filtra pelo `CurrentUserId` — retorna apenas os grupos dos quais o usuário autenticado é membro ou administrador
+- Convites têm validade de 72 horas e o e-mail do token é validado contra o e-mail do usuário autenticado que aceita
+- A exclusão do grupo remove em cascata: contas bancárias, transações, cartões de crédito, compras/parcelas e cobranças recorrentes

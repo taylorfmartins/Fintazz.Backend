@@ -1,6 +1,5 @@
 namespace Fintazz.Application.RecurringCharges.Queries.GetActiveRecurringCharges;
 
-using MediatR;
-using Fintazz.Domain.Entities;
+using Fintazz.Application.Abstractions.Messaging;
 
-public record GetActiveRecurringChargesQuery(Guid HouseHoldId) : IRequest<IEnumerable<RecurringCharge>>;
+public record GetActiveRecurringChargesQuery(Guid HouseHoldId) : IQuery<IEnumerable<RecurringChargeResponse>>;
