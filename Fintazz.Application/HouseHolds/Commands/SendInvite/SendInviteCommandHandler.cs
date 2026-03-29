@@ -31,6 +31,11 @@ public class SendInviteCommandHandler : ICommandHandler<SendInviteCommand, Guid>
         if (!houseHold.IsAdmin(request.RequestingUserId))
             return Result<Guid>.Failure(new Error("HouseHold.Forbidden", "Apenas o Administrador pode enviar convites."));
 
+        var admin = await _userRepository.GetByIdAsync(request.RequestingUserId, cancellationToken);
+
+        if (admin is not null && admin.Email.Equals(request.InviteeEmail, StringComparison.OrdinalIgnoreCase))
+            return Result<Guid>.Failure(new Error("HouseHold.CannotInviteYourself", "O Administrador não pode convidar a si mesmo."));
+
         var invitee = await _userRepository.GetByEmailAsync(request.InviteeEmail, cancellationToken);
 
         if (invitee is null)

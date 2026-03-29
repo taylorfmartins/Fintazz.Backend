@@ -112,15 +112,11 @@ O `Fintazz.Worker` é um projeto separado que roda como background service usand
 
 ## Módulos Implementados
 
-- [[Cadastro de Usuário e Autenticação]] — Registro, login, refresh de token (JWT), perfil do usuário (`GET /api/users/me`)
+- [[Cadastro de Usuário e Autenticação]] — Registro, login, refresh de token (JWT), perfil, edição de perfil, troca de senha, confirmação de e-mail e recuperação de senha
 - [[Grupos - Residência - Família]] — CRUD completo, controle de Administrador, membros e fluxo de convites por e-mail
 - [[Contas Bancária]] — CRUD completo com saldo, edição, exclusão em cascata
-- [[Cartão de Crédito]] — CRUD completo, compras parceladas, estorno, pagamento de fatura, fatura por mês/ano
+- [[Cartão de Crédito]] — CRUD completo, compras parceladas, edição de compra, categoria em compra, estorno, pagamento de fatura, marcar parcela individual como paga, fatura por mês/ano
 - [[Transação]] — Lançamento de receitas e despesas, exclusão, marcar como paga, extrato paginado
 - [[Transações Recorrentes]] — Cadastro, edição, cancelamento (soft delete), reativação, aprovação manual
-- [[Categoria]] — CRUD completo por grupo familiar, validação de uso antes de excluir
+- [[Categoria]] — CRUD completo por grupo familiar, categorias de sistema pré-cadastradas, validação de uso antes de excluir
 - **Dashboards** — Balanço mensal consolidado e detalhamento de fatura por cartão
-
-## Módulos Pendentes
-
-- **Marcar parcela como paga** — Endpoint para dar baixa em uma parcela de cartão individualmente

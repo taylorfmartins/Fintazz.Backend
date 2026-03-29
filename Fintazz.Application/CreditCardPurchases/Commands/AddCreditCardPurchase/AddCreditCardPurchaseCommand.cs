@@ -10,9 +10,11 @@ using Fintazz.Application.Abstractions.Messaging;
 /// <param name="TotalAmount">Valor cheio da compra (será dividido caso haja várias parcelas).</param>
 /// <param name="PurchaseDate">Data que efetuou a compra (influencia em qual fatura começará a ser cobrada baseada na data de fechamento).</param>
 /// <param name="TotalInstallments">Quantidade total de parcelas. O valor da parcela é Total / TotalInstallments.</param>
+/// <param name="CategoryId">ID da categoria de despesa (opcional).</param>
 public record AddCreditCardPurchaseCommand(
     Guid CreditCardId,
     string Description,
     decimal TotalAmount,
     DateTime PurchaseDate,
-    int TotalInstallments) : ICommand<Guid>;
+    int TotalInstallments,
+    Guid? CategoryId = null) : ICommand<Guid>;

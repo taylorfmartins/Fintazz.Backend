@@ -41,6 +41,7 @@ public class GetCreditCardInvoiceQueryHandler : IQueryHandler<GetCreditCardInvoi
             {
                 invoiceItems.Add(new InvoiceItemResponse(
                     PurchaseId: purchase.Id,
+                    InstallmentId: targetInstallment.Id,
                     Description: purchase.Description,
                     PurchaseDate: purchase.PurchaseDate,
                     TotalPurchaseAmount: purchase.TotalAmount,

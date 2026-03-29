@@ -22,9 +22,25 @@
 - `PUT /api/categories/{id}` — Renomeia uma categoria existente
 - `DELETE /api/categories/{id}` — Remove uma categoria (apenas se não estiver em uso)
 
+## Subcategorias
+
+- Uma categoria pode ter uma **categoria pai** (campo `parentCategoryId` no cadastro)
+- A subcategoria deve ter o mesmo tipo (Income/Expense) da categoria pai
+- Não é permitido criar subcategorias de subcategorias (máximo 1 nível de hierarquia)
+- Não é possível excluir uma categoria pai que ainda possui subcategorias
+- A resposta inclui o campo `parentCategoryId` (null para categorias raiz)
+
+## Categorias de Sistema
+
+- Categorias comuns pré-cadastradas automaticamente na inicialização da API: `Alimentação`, `Moradia`, `Transporte`, `Saúde`, `Educação`, `Lazer`, `Vestuário`, `Assinaturas`, `Outros` (Despesa) e `Salário`, `Freelance`, `Investimentos`, `Outros` (Receita)
+- Categorias de sistema têm `isSystem = true` na resposta e **não podem ser excluídas nem renomeadas**
+- Categorias criadas pelo usuário pertencem ao grupo familiar e são visíveis a todos os membros do grupo
+
 ## Situação Atual no Código
 
 - Módulo completo e operacional: criação, listagem, consulta por ID, renomeação e exclusão implementadas
 - `Transaction` e `RecurringCharge` referenciam `Category` pelo `CategoryId` (Guid) — o campo `string?` livre não existe mais
 - A exclusão é bloqueada se a categoria estiver em uso por alguma transação ou cobrança recorrente
 - O tipo (`Income`/`Expense`) é serializado como string na API — os valores inteiros não são expostos
+- Campo `isSystem` retornado na resposta — categorias de sistema são protegidas contra edição e exclusão
+- Seed automático de categorias de sistema executa na inicialização da API (`SeedSystemCategoriesAsync`)

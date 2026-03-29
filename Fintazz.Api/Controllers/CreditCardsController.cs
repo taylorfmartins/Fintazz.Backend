@@ -2,6 +2,8 @@ using Fintazz.Api.Infrastructure;
 using CreatedResponse = Fintazz.Api.Infrastructure.CreatedResponse;
 using Fintazz.Application.CreditCardPurchases.Commands.AddCreditCardPurchase;
 using Fintazz.Application.CreditCardPurchases.Commands.DeleteCreditCardPurchase;
+using Fintazz.Application.CreditCardPurchases.Commands.MarkInstallmentAsPaid;
+using Fintazz.Application.CreditCardPurchases.Commands.UpdateCreditCardPurchase;
 using Fintazz.Application.CreditCardPurchases.Queries.GetCreditCardPurchases;
 using Fintazz.Application.CreditCards.Commands.CreateCreditCard;
 using Fintazz.Application.CreditCards.Commands.DeleteCreditCard;
@@ -204,6 +206,48 @@ public class CreditCardsController : BaseApiController
     }
 
     /// <summary>
+    /// Atualiza a descrição e/ou categoria de uma compra no cartão de crédito.
+    /// </summary>
+    /// <param name="purchaseId">ID da compra a ser atualizada.</param>
+    /// <param name="request">Nova descrição e/ou categoria da compra.</param>
+    /// <response code="204">Compra atualizada com sucesso.</response>
+    /// <response code="400">Dados inválidos ou compra não encontrada.</response>
+    [HttpPut("purchases/{purchaseId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdatePurchase(Guid purchaseId, [FromBody] UpdateCreditCardPurchaseRequest request, CancellationToken cancellationToken)
+    {
+        var command = new UpdateCreditCardPurchaseCommand(purchaseId, request.Description, request.CategoryId);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Marca uma parcela individual de uma compra no cartão como paga.
+    /// </summary>
+    /// <param name="purchaseId">ID da compra no cartão de crédito.</param>
+    /// <param name="installmentId">ID da parcela a ser marcada como paga.</param>
+    /// <response code="204">Parcela marcada como paga com sucesso.</response>
+    /// <response code="400">Parcela já paga, compra ou parcela não encontrada.</response>
+    [HttpPost("purchases/{purchaseId}/installments/{installmentId}/pay")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> MarkInstallmentAsPaid(Guid purchaseId, Guid installmentId, CancellationToken cancellationToken)
+    {
+        var command = new MarkInstallmentAsPaidCommand(purchaseId, installmentId);
+        var result = await _sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
+
+    /// <summary>
     /// Paga a fatura de um cartão de crédito, debitando uma conta bancária e marcando as parcelas como pagas.
     /// </summary>
     /// <param name="id">ID do cartão de crédito.</param>
@@ -224,6 +268,11 @@ public class CreditCardsController : BaseApiController
         return Ok(new CreatedResponse(result.Value));
     }
 }
+
+/// <summary>Dados para atualização de uma compra no cartão.</summary>
+/// <param name="Description">Nova descrição da compra.</param>
+/// <param name="CategoryId">ID da categoria de despesa (opcional).</param>
+public record UpdateCreditCardPurchaseRequest(string Description, Guid? CategoryId);
 
 /// <summary>Dados para edição de um cartão de crédito.</summary>
 /// <param name="Name">Novo nome do cartão.</param>

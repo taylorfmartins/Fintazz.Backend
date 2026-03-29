@@ -4,9 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Fintazz.Infrastructure.Auth;
 using Fintazz.Infrastructure.Data;
+using Fintazz.Infrastructure.Email;
 using Fintazz.Infrastructure.Repositories;
 using Fintazz.Domain.Repositories;
 using Fintazz.Application.Abstractions.Services;
+using Hangfire;
 
 public static class DependencyInjection
 {
@@ -14,6 +16,7 @@ public static class DependencyInjection
     {
         services.Configure<MongoDbSettings>(configuration.GetSection(MongoDbSettings.SectionName));
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
 
         services.AddSingleton<MongoContext>();
 
@@ -30,6 +33,9 @@ public static class DependencyInjection
         services.AddScoped<IProductRepository, ProductRepository>();
 
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailQueue, HangfireEmailQueue>();
+        services.AddScoped<EmailJobs>();
 
         return services;
     }

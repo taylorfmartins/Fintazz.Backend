@@ -15,9 +15,9 @@ public class GetCategoriesByHouseHoldQueryHandler : IQueryHandler<GetCategoriesB
 
     public async Task<Result<IEnumerable<CategoryResponse>>> Handle(GetCategoriesByHouseHoldQuery request, CancellationToken cancellationToken)
     {
-        var categories = await _categoryRepository.GetByHouseHoldAsync(request.HouseHoldId, cancellationToken);
+        var categories = await _categoryRepository.GetByHouseHoldAndUserAsync(request.HouseHoldId, request.CurrentUserId, cancellationToken);
 
-        var response = categories.Select(c => new CategoryResponse(c.Id, c.Name, c.Type, c.CreatedByUserId));
+        var response = categories.Select(c => new CategoryResponse(c.Id, c.Name, c.Type, c.CreatedByUserId, c.IsSystem, c.ParentCategoryId));
 
         return Result<IEnumerable<CategoryResponse>>.Success(response);
     }

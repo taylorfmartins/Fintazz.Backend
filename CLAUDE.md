@@ -101,14 +101,40 @@ Sempre declaradas em `Fintazz.Domain/Repositories/` e implementadas em `Fintazz.
 - Dashboards — balanço mensal e fatura de cartão por mês/ano
 - Worker — `ProcessRecurringChargesJob` processa recorrentes diariamente
 
-## Módulos Pendentes
+## Módulos Implementados (completos)
 
-Implemente seguindo a documentação em `/docs` antes de começar:
+- **Cadastro de Usuário e Autenticação JWT** ✅ — login, registro, refresh token, confirmação de e-mail, recuperação de senha, edição de perfil, troca de senha
+- **BankAccounts** ✅ — criação, listagem, edição, exclusão em cascata, pagamento de fatura via cartão
+- **CreditCards** ✅ — criação, listagem, edição, exclusão em cascata, compras parceladas com categoria, edição de compra, marcar parcela como paga, fatura mensal, pagamento de fatura
+- **Transactions** ✅ — criação, listagem paginada, exclusão, marcar como paga
+- **RecurringCharges** ✅ — criação, listagem, edição, cancelamento, reativação, aprovação manual
+- **Categorias** ✅ — CRUD completo, categorias de sistema (seed), subcategorias (1 nível), visibilidade por grupo familiar
+- **HouseHolds** ✅ — criação, edição, exclusão, listagem, membros, convites, aceitar convite
 
-- **Cadastro de Usuário e Autenticação JWT** — ver `/docs/Cadastro de Usuário.md`
-- **BankAccounts** — edição, exclusão em cascata e pagamento de fatura (via cartão)
-- **CreditCards** — edição, exclusão em cascata
-- **Transactions** — exclusão e marcar como paga
-- **RecurringCharges** — edição, reativação e aprovação manual
-- **Categorias** — módulo completo, ver `/docs/Categoria.md`
-- **HouseHolds** — edição, exclusão, membros e convites
+## Melhorias Pendentes
+
+- **Grupos Familiares**
+	- Ao enviar e-mail com o convite do grupo para o usuário, ao clicar em entrar no grupo no link do e-mail, irá trazer o usuário para o sistema, precisamos que ele faça um cadastro se não tiver ou seja registrado no grupo caso já se autenticar.
+
+## Melhorias Implementadas
+
+- **Usuário / Cadastro** ✅
+	- Confirmação de e-mail no cadastro — `POST /api/auth/confirm-email` e `POST /api/auth/resend-confirmation`
+	- Recuperação de senha — `POST /api/auth/forgot-password` e `POST /api/auth/reset-password`
+	- Edição de perfil (nome, apelido, data de nascimento) — `PUT /api/users/me`
+	- Troca de senha (exige senha atual) — `PUT /api/users/me/password`
+
+- **Categorias** ✅
+	- Categorias de sistema pré-cadastradas (Alimentação, Moradia, Saúde, Transporte, etc.) — seed automático na inicialização
+	- Categorias criadas pelo usuário são visíveis a todos os membros do grupo familiar
+	- Resposta inclui campo `isSystem`; categorias de sistema não podem ser excluídas nem renomeadas
+	- Subcategorias — campo `parentCategoryId` opcional no cadastro; mesmo tipo da pai; máximo 1 nível; resposta inclui `parentCategoryId`
+
+- **Grupos Familiares** ✅
+	- Convite não aceita o e-mail do próprio dono do grupo — erro `HouseHold.CannotInviteYourself`
+	- Verificação de membros já no grupo antes de enviar convite — erro `HouseHold.AlreadyMember`
+
+- **Compras Cartão de Crédito** ✅
+	- Seleção de categoria de despesa ao registrar compra — campo `categoryId` (opcional) no `POST /api/credit-cards/purchases`
+	- Edição de compra existente — `PUT /api/credit-cards/purchases/{purchaseId}` (descrição e categoria)
+	- Marcar parcela individual como paga — `POST /api/credit-cards/purchases/{purchaseId}/installments/{installmentId}/pay`

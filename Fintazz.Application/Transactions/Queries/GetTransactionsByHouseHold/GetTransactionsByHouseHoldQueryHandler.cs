@@ -26,7 +26,7 @@ public class GetTransactionsByHouseHoldQueryHandler : IQueryHandler<GetTransacti
         var transactionsTask = _transactionRepository.GetTransactionsByHouseHoldPagedAsync(
             request.HouseHoldId, request.Page, request.PageSize, request.StartDate, request.EndDate, cancellationToken);
         var bankAccountsTask = _bankAccountRepository.GetBankAccountsByHouseHoldAsync(request.HouseHoldId, cancellationToken);
-        var categoriesTask   = _categoryRepository.GetByHouseHoldAsync(request.HouseHoldId, cancellationToken);
+        var categoriesTask   = _categoryRepository.GetByHouseHoldAndUserAsync(request.HouseHoldId, Guid.Empty, cancellationToken);
 
         await Task.WhenAll(transactionsTask, bankAccountsTask, categoriesTask);
 

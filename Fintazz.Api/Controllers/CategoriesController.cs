@@ -35,7 +35,7 @@ public class CategoriesController : BaseApiController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
-        var command = new CreateCategoryCommand(request.HouseHoldId, request.Name, request.Type, CurrentUserId);
+        var command = new CreateCategoryCommand(request.HouseHoldId, request.Name, request.Type, CurrentUserId, request.ParentCategoryId);
         var result = await _sender.Send(command, cancellationToken);
 
         if (result.IsFailure)
@@ -53,7 +53,7 @@ public class CategoriesController : BaseApiController
     [ProducesResponseType(typeof(IEnumerable<CategoryResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByHouseHold(Guid houseHoldId, CancellationToken cancellationToken)
     {
-        var query = new GetCategoriesByHouseHoldQuery(houseHoldId);
+        var query = new GetCategoriesByHouseHoldQuery(houseHoldId, CurrentUserId);
         var result = await _sender.Send(query, cancellationToken);
 
         if (result.IsFailure)
@@ -129,5 +129,5 @@ public class CategoriesController : BaseApiController
     }
 }
 
-public record CreateCategoryRequest(Guid HouseHoldId, string Name, Fintazz.Domain.Entities.CategoryType Type);
+public record CreateCategoryRequest(Guid HouseHoldId, string Name, Fintazz.Domain.Entities.CategoryType Type, Guid? ParentCategoryId = null);
 public record UpdateCategoryRequest(string Name);

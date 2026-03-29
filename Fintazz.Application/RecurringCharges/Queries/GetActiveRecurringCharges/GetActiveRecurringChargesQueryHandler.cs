@@ -31,7 +31,7 @@ public class GetActiveRecurringChargesQueryHandler
         var chargesTask      = _recurringChargeRepository.GetActiveByHouseHoldAsync(request.HouseHoldId, cancellationToken);
         var bankAccountsTask = _bankAccountRepository.GetBankAccountsByHouseHoldAsync(request.HouseHoldId, cancellationToken);
         var creditCardsTask  = _creditCardRepository.GetCardsByHouseHoldAsync(request.HouseHoldId, cancellationToken);
-        var categoriesTask   = _categoryRepository.GetByHouseHoldAsync(request.HouseHoldId, cancellationToken);
+        var categoriesTask   = _categoryRepository.GetByHouseHoldAndUserAsync(request.HouseHoldId, Guid.Empty, cancellationToken);
 
         await Task.WhenAll(chargesTask, bankAccountsTask, creditCardsTask, categoriesTask);
 

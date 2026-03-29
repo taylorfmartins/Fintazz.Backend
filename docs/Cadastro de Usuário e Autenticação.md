@@ -52,6 +52,18 @@ O sistema utiliza **JWT (JSON Web Token)** stateless com dois tokens:
 ### Perfil
 
 - `GET /api/users/me` — Retorna os dados do usuário autenticado (exige `Authorization: Bearer`)
+- `PUT /api/users/me` — Atualiza nome, apelido e data de nascimento do usuário autenticado
+- `PUT /api/users/me/password` — Altera a senha (exige senha atual para confirmação)
+
+### Confirmação de E-mail
+
+- `POST /api/auth/confirm-email` — Confirma o e-mail usando o token recebido no e-mail de cadastro
+- `POST /api/auth/resend-confirmation` — Reenvia o e-mail de confirmação
+
+### Recuperação de Senha
+
+- `POST /api/auth/forgot-password` — Envia e-mail com link de redefinição de senha (token válido por 2h)
+- `POST /api/auth/reset-password` — Define uma nova senha usando o token recebido por e-mail
 
 ## Fluxo de Cadastro (`POST /api/auth/register`)
 
@@ -149,9 +161,35 @@ O fluxo de convite é gerenciado pelo módulo [[Grupos - Residência - Família]
 - O middleware `[Authorize]` valida o token e rejeita com `401 Unauthorized` se ausente ou inválido
 - O `CurrentUserId` é extraído do claim `sub` — se o claim não for um Guid válido, retorna `Guid.Empty`
 
+## Entidade User — Campos Adicionais
+
+| Campo | Tipo | Descrição |
+|---|---|---|
+| `PasswordResetToken` | `string?` | Token de redefinição de senha (expira em 2h) |
+| `PasswordResetTokenExpiresAt` | `DateTime?` | Expiração do token de reset (UTC) |
+| `IsEmailConfirmed` | `bool` | Indica se o e-mail foi confirmado |
+| `EmailConfirmationToken` | `string?` | Token de confirmação de e-mail (expira em 24h) |
+| `EmailConfirmationTokenExpiresAt` | `DateTime?` | Expiração do token de confirmação (UTC) |
+
+## E-mail (SMTP)
+
+O sistema utiliza o serviço de e-mail para:
+- Enviar confirmação de e-mail no cadastro
+- Reenviar confirmação de e-mail a pedido do usuário
+- Enviar link de redefinição de senha
+
+Configuração via `EmailSettings` no `appsettings.json`:
+- `SmtpHost`, `SmtpPort`, `Username`, `Password`
+- `FromEmail`, `FromName`
+- `AppBaseUrl` — base para construção dos links nos e-mails
+
 ## Situação Atual no Código
 
-- Módulo completo e operacional: cadastro, login, renovação de token e consulta de perfil implementados
+- Módulo completo e operacional: cadastro, login, renovação de token, consulta e edição de perfil implementados
 - O `JwtService` gera tokens com `HmacSha256` e os claims `sub`, `email`, `name` e `jti`
 - As configurações de JWT (`SecretKey`, `Issuer`, `Audience`, expiração) ficam em `appsettings.json` sob a seção `JwtSettings`
 - O `RefreshTokenExpirationDays` está fixo em 7 dias no handler — o campo `JwtSettings.RefreshTokenExpirationDays` existe mas não é consumido pelo handler atualmente
+- Confirmação de e-mail obrigatória no cadastro — token gerado no registro e enviado por e-mail via `IEmailService`
+- Recuperação de senha via token com validade de 2 horas
+- Edição de perfil: `PUT /api/users/me` permite alterar `FullName`, `NickName` e `BirthDate`
+- Troca de senha: `PUT /api/users/me/password` exige senha atual para confirmar a identidade

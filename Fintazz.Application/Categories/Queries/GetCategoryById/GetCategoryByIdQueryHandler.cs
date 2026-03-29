@@ -25,6 +25,8 @@ public class GetCategoryByIdQueryHandler : IQueryHandler<GetCategoryByIdQuery, C
             category.Id,
             category.Name,
             category.Type,
-            category.CreatedByUserId));
+            category.CreatedByUserId,
+            category.IsSystem,
+            category.ParentCategoryId));
     }
 }

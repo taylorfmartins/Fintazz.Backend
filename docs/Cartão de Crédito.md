@@ -96,8 +96,16 @@ Os seguintes campos podem ser alterados:
 - [[Transações Recorrentes]] — assinaturas no cartão são lançadas automaticamente pelo Worker como compras de 1 parcela
 - [[Grupos - Residência - Família]] — todos os membros do grupo visualizam os cartões e faturas
 
+## Edição de Compra
+
+Os seguintes campos podem ser alterados em uma compra já registrada:
+- **Descrição** — renomeia a compra sem impacto nas parcelas
+- **Categoria** — vincula ou altera a categoria de despesa da compra
+
 ## Situação Atual no Código
 
 - Módulo completo e operacional: criação, listagem, edição, exclusão, compras, estorno e pagamento de fatura implementados
 - Alteração do Dia de Fechamento não recalcula parcelas já existentes — comportamento intencional
 - [[Transações Recorrentes]] que apontam para o cartão excluído são desativadas automaticamente (soft delete) na exclusão em cascata
+- Compras podem ter uma categoria de despesa opcional — `PUT /api/credit-cards/purchases/{purchaseId}` para editar descrição e categoria
+- Parcelas individuais podem ser marcadas como pagas — `POST /api/credit-cards/purchases/{purchaseId}/installments/{installmentId}/pay`

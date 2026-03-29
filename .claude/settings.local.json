@@ -1,9 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet restore:*)",
-      "Bash(dotnet build:*)",
-      "Bash(powershell -Command \"\\(Get-Content ''Fintazz.Application\\\\Transactions\\\\Commands\\\\AddTransaction\\\\AddTransactionCommandHandler.cs''\\) -replace ''request\\\\.Category'', ''request.CategoryId'' | Set-Content ''Fintazz.Application\\\\Transactions\\\\Commands\\\\AddTransaction\\\\AddTransactionCommandHandler.cs''\")"
+      "Bash(*)"
     ]
   }
 }

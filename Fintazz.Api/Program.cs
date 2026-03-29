@@ -1,9 +1,16 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Fintazz.Application;
+using Fintazz.Domain.Repositories;
 using Fintazz.Infrastructure;
 using Fintazz.Infrastructure.Auth;
+using Fintazz.Infrastructure.Data;
+using Hangfire;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +33,24 @@ builder.Services.AddSwaggerGen(c =>
 // Registrar camadas da Clean Architecture
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Hangfire — apenas client (API enfileira; Worker processa)
+builder.Services.AddHangfire((provider, config) =>
+{
+    var mongoSettings = provider.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+    config.UseMongoStorage(
+        mongoSettings.ConnectionString,
+        "FintazzHangfire",
+        new MongoStorageOptions
+        {
+            MigrationOptions = new MongoMigrationOptions
+            {
+                MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                BackupStrategy = new CollectionMongoBackupStrategy()
+            },
+            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection
+        });
+});
 
 // Autenticação JWT
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()!;
@@ -108,5 +133,12 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Seed de categorias de sistema na inicialização
+using (var scope = app.Services.CreateScope())
+{
+    var categoryRepository = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
+    await categoryRepository.SeedSystemCategoriesAsync();
+}
 
 app.Run();

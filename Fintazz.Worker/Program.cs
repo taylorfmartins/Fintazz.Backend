@@ -1,4 +1,5 @@
 using Fintazz.Infrastructure;
+using Fintazz.Infrastructure.Email;
 using Fintazz.Application;
 using Fintazz.Infrastructure.Data;
 using Hangfire;
@@ -18,6 +19,7 @@ builder.Services.AddApplication();
 
 // Registrar os Jobs como serviços para injeção de dependência
 builder.Services.AddScoped<ProcessRecurringChargesJob>();
+builder.Services.AddScoped<EmailJobs>();
 
 var host = builder.Build();
 

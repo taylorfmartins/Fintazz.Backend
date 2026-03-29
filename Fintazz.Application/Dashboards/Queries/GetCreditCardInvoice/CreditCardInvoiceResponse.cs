@@ -17,6 +17,7 @@ public record CreditCardInvoiceResponse(
 /// Representa um item (compra ou parcela) listado dentro de uma fatura de cartão.
 /// </summary>
 /// <param name="PurchaseId">ID raiz da compra de cartão de crédito no banco de dados.</param>
+/// <param name="InstallmentId">ID da parcela individual.</param>
 /// <param name="Description">Identificador da compra (ex: Pneu Carro, Mercado).</param>
 /// <param name="PurchaseDate">Data oficial da compra global.</param>
 /// <param name="TotalPurchaseAmount">Valor bruto e cheio original da compra de cartão, antes dos parcelamentos.</param>
@@ -27,6 +28,7 @@ public record CreditCardInvoiceResponse(
 /// <param name="IsPaid">Status de adimplência da parcela.</param>
 public record InvoiceItemResponse(
     Guid PurchaseId,
+    Guid InstallmentId,
     string Description,
     DateTime PurchaseDate,
     decimal TotalPurchaseAmount,

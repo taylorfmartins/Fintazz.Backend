@@ -10,8 +10,10 @@ using Fintazz.Domain.Entities;
 /// <param name="Name">Nome da categoria (ex: Alimentação, Lazer).</param>
 /// <param name="Type">Tipo da categoria: Income ou Expense.</param>
 /// <param name="CreatedByUserId">ID do usuário que está criando a categoria.</param>
+/// <param name="ParentCategoryId">ID da categoria pai (opcional, para subcategorias).</param>
 public record CreateCategoryCommand(
     Guid HouseHoldId,
     string Name,
     CategoryType Type,
-    Guid CreatedByUserId) : ICommand<Guid>;
+    Guid CreatedByUserId,
+    Guid? ParentCategoryId = null) : ICommand<Guid>;

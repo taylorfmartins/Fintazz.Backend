@@ -20,6 +20,9 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         if (category is null)
             return Result.Failure(new Error("Category.NotFound", "Categoria não encontrada."));
 
+        if (category.IsSystem)
+            return Result.Failure(new Error("Category.SystemCategory", "Categorias do sistema não podem ser renomeadas."));
+
         var existing = await _categoryRepository.GetByNameAndTypeAsync(
             category.HouseHoldId, request.Name, category.Type, cancellationToken);
 
