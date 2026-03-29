@@ -21,18 +21,16 @@ RUN dotnet restore Fintazz.Backend.slnx
 
 COPY . .
 
-RUN dotnet build Fintazz.Backend.slnx -c Release --no-restore
-
 # ============================================================
 # Stage 3: publish
 # ============================================================
 FROM build AS publish
 
 RUN dotnet publish Fintazz.Api/Fintazz.Api.csproj \
-    -c Release --no-build -o /app/publish/api
+    -c Release --no-restore -o /app/publish/api
 
 RUN dotnet publish Fintazz.Worker/Fintazz.Worker.csproj \
-    -c Release --no-build -o /app/publish/worker
+    -c Release --no-restore -o /app/publish/worker
 
 # ============================================================
 # Stage 4: api
