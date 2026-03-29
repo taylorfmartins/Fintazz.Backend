@@ -1,0 +1,18 @@
+services:
+  api:
+    image: ghcr.io/taylorfmartins/fintazz-api:latest
+    container_name: fintazz-api
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: unless-stopped
+
+  worker:
+    image: ghcr.io/taylorfmartins/fintazz-worker:latest
+    container_name: fintazz-worker
+    env_file: .env
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+    restart: unless-stopped
