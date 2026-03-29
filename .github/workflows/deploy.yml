@@ -10,7 +10,9 @@ env:
   WORKER_IMAGE: ghcr.io/taylorfmartins/fintazz-worker
 
 jobs:
+  # Roda apenas no push em develop: builda e publica imagem :dev
   build-and-push:
+    if: github.ref_name == 'develop'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,15 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set image tag
-        id: vars
-        run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          else
-            echo "tag=dev" >> $GITHUB_OUTPUT
-          fi
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -45,7 +38,7 @@ jobs:
           context: .
           target: api
           push: true
-          tags: ${{ env.API_IMAGE }}:${{ steps.vars.outputs.tag }},${{ env.API_IMAGE }}:${{ github.sha }}
+          tags: ${{ env.API_IMAGE }}:dev,${{ env.API_IMAGE }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -55,13 +48,43 @@ jobs:
           context: .
           target: worker
           push: true
-          tags: ${{ env.WORKER_IMAGE }}:${{ steps.vars.outputs.tag }},${{ env.WORKER_IMAGE }}:${{ github.sha }}
+          tags: ${{ env.WORKER_IMAGE }}:dev,${{ env.WORKER_IMAGE }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # Roda apenas no push em main: promove :dev para :latest sem rebuild
+  promote:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Promote API image dev → latest
+        run: |
+          docker pull ${{ env.API_IMAGE }}:dev
+          docker tag ${{ env.API_IMAGE }}:dev ${{ env.API_IMAGE }}:latest
+          docker push ${{ env.API_IMAGE }}:latest
+
+      - name: Promote Worker image dev → latest
+        run: |
+          docker pull ${{ env.WORKER_IMAGE }}:dev
+          docker tag ${{ env.WORKER_IMAGE }}:dev ${{ env.WORKER_IMAGE }}:latest
+          docker push ${{ env.WORKER_IMAGE }}:latest
+
+  # Deploy em dev (develop) ou produção (main) via SSH
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [build-and-push, promote]
+    if: always() && (needs.build-and-push.result == 'success' || needs.promote.result == 'success')
 
     steps:
       - name: Set deploy vars
