@@ -20,7 +20,7 @@ public class JwtService : IJwtService
 
     public string GenerateAccessToken(User user)
     {
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
@@ -28,13 +28,16 @@ public class JwtService : IJwtService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
+        if (user.IsAdmin)
+            claims.Add(new Claim(ClaimTypes.Role, "admin"));
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _settings.Issuer,
             audience: _settings.Audience,
-            claims: claims,
+            claims: claims.ToArray(),
             expires: GetAccessTokenExpiration(),
             signingCredentials: credentials);
 

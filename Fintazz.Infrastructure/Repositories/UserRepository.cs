@@ -20,4 +20,9 @@ public class UserRepository : MongoRepository<User>, IUserRepository
         var filter = Builders<User>.Filter.Eq(u => u.RefreshToken, refreshToken);
         return await Collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await Collection.Find(Builders<User>.Filter.Empty).SortBy(u => u.FullName).ToListAsync(cancellationToken);
+    }
 }

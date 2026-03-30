@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
+using Fintazz.Api.Infrastructure;
 using Fintazz.Application;
 using Fintazz.Domain.Repositories;
 using Fintazz.Infrastructure;
@@ -12,6 +14,7 @@ using Hangfire.Mongo.Migration.Strategies.Backup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
@@ -67,11 +70,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("admin"));
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -113,6 +120,10 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options 
     };
 });
 
+// Hangfire Dashboard — autenticação via session cookie
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<HangfireSessionService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -132,7 +143,37 @@ app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Hangfire Dashboard — acessível apenas com session cookie válido
+var hangfireSessions = app.Services.GetRequiredService<HangfireSessionService>();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [new HangfireAdminAuthFilter(hangfireSessions)],
+    AppPath = null
+});
+
 app.MapControllers();
+
+// Troca ticket (single-use, 60s) por session cookie e redireciona para /hangfire
+app.MapGet("/api/admin/hangfire-entry/{ticket}", (
+    string ticket,
+    HangfireSessionService sessions,
+    HttpContext http) =>
+{
+    if (!sessions.ValidateAndConsumeTicket(ticket))
+        return Results.Forbid();
+
+    var session = sessions.CreateSession();
+    http.Response.Cookies.Append(HangfireAdminAuthFilter.CookieName, session, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = http.Request.IsHttps,
+        SameSite = SameSiteMode.Lax,
+        MaxAge = TimeSpan.FromMinutes(30),
+        Path = "/hangfire"
+    });
+    return Results.Redirect("/hangfire");
+}).AllowAnonymous();
 
 // Seed de categorias de sistema na inicialização
 using (var scope = app.Services.CreateScope())

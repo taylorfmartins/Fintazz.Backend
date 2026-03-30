@@ -16,6 +16,7 @@ public class User : AggregateRoot
     public bool IsEmailConfirmed { get; private set; }
     public string? EmailConfirmationToken { get; private set; }
     public DateTime? EmailConfirmationTokenExpiresAt { get; private set; }
+    public bool IsAdmin { get; private set; }
 
     public User(Guid id, string fullName, string nickName, string email, DateOnly birthDate, string passwordHash)
         : base(id)
@@ -78,4 +79,7 @@ public class User : AggregateRoot
         EmailConfirmationToken == token &&
         EmailConfirmationTokenExpiresAt.HasValue &&
         EmailConfirmationTokenExpiresAt.Value > DateTime.UtcNow;
+
+    public void MakeAdmin() => IsAdmin = true;
+    public void RevokeAdmin() => IsAdmin = false;
 }
